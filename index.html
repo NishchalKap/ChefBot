@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefBot - Your Ultimate AI Kitchen Assistant</title>
+    <style>
+        /* --- General Styling & Theming --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- Main Chat Container --- */
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Chat Header --- */
+        .chat-header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            padding: 25px;
+            text-align: center;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .chef-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        .chat-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* --- Chat Messages Area --- */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 8px; }
+        .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        .chat-messages::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            margin: 0 12px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .message-content {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.6;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .message.bot .message-content { border-bottom-left-radius: 5px; }
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        /* --- Special Card Styles --- */
+        .recipe-card {
+            background: #ffffff;
+            border-left: 5px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .recipe-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); }
+
+        .recipe-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+        .recipe-details { color: #636e72; margin-bottom: 12px; font-size: 0.9em; }
+        .ingredients-list { background: #fef5f5; padding: 12px; border-radius: 10px; margin: 10px 0; font-size: 0.9em; }
+
+        /* --- Typing Indicator --- */
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            align-items: center;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        /* --- Chat Input Area --- */
+        .chat-input-container {
+            background: white;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .quick-suggestions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .suggestion-btn {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .suggestion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(116, 185, 255, 0.4);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        .chat-input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        /* --- Animation Keyframes --- */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .chat-container { height: 95vh; border-radius: 15px; }
+            .chat-header h1 { font-size: 2em; }
+            .chat-messages { padding: 15px; }
+            .message-content { max-width: 85%; }
+            .suggestion-btn { padding: 6px 12px; font-size: 0.8em; }
+            .chat-input { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="chef-icon">👨‍🍳</div>
+            <h1>ChefBot</h1>
+            <p>Your Ultimate AI Kitchen Assistant</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Namaste! 🙏 I'm ChefBot, your personal cooking assistant! <br><br>
+                    I can help you with:
+                    • Recipe ideas from ingredients (e.g., "I have 250g paneer and 2 onions")<br>
+                    • Cooking techniques and tips<br>
+                    • Jain, vegan, or gluten-free options<br>
+                    • Quick meals or elaborate dishes<br>
+                    • Both Indian & International cuisines<br><br>
+                    What would you like to cook today?
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message bot">
+                 <div class="message-avatar">🤖</div>
+                 <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="quick-suggestions">
+                <button class="suggestion-btn">🥔 I have aloo and pyaz</button>
+                <button class="suggestion-btn">🍛 Quick dal rice recipe</button>
+                <button class="suggestion-btn">🍝 Vegetarian Pasta</button>
+                <button class="suggestion-btn">🥗 Healthy breakfast</button>
+            </div>
+            <div class="input-group">
+                <input type="text" class="chat-input" id="messageInput" placeholder="e.g., 'I have 2 onions and 500g potatoes'" autocomplete="off">
+                <button class="send-btn" id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Self-invoking function to encapsulate the entire ChefBot application
+(function() {
+    // --- DOM ELEMENT REFERENCES ---
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const suggestionsContainer = document.querySelector('.quick-suggestions');
+
+    // --- CORE LOGIC ---
+
+    async function handleUserMessage(message) {
+        const trimmedMessage = message.trim();
+        if (!trimmedMessage) return;
+
+        renderMessage(trimmedMessage, 'user');
+        messageInput.value = '';
+        toggleTypingIndicator(true);
+
+        const response = await getBotResponse(trimmedMessage);
+        
+        toggleTypingIndicator(false);
+        renderMessage(response, 'bot');
+    }
+
+    async function getBotResponse(userMessage) {
+        const systemPrompt = `You are ChefBot, an expert AI cooking assistant. You are friendly, knowledgeable, and specialize in Indian cuisine but can handle international dishes too.
+        - Your language is encouraging and slightly informal, using Hinglish (like "Namaste!", "Let's make some delicious khana!") where appropriate.
+        - When you provide a recipe, you MUST format it inside a div with the class "recipe-card".
+        - The recipe card must contain a div with class "recipe-title" (with a 🍽️ emoji), a div with class "recipe-details", a div with class "ingredients-list", and a final section for the method.
+        - You must infer quantities if not provided (e.g., "aloo pyaz" implies 2-3 potatoes, 1-2 onions).
+        - If a request is vague, ask clarifying questions (e.g., "That sounds great! Do you want a dry sabzi or a curry?").
+        - For non-recipe questions (like asking for a "tip"), do not use a recipe card.
+        
+        User's request: "${userMessage}"`;
+        
+        try {
+            // This now calls YOUR proxy, which is running on the same server.
+            const response = await fetch('/api/proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: systemPrompt }),
+            });
+
+            if (!response.ok) {
+                console.error('Error from proxy:', response.statusText);
+                return "Oops! My kitchen seems to be having a small problem. Could you ask me again?";
+            }
+
+            const data = await response.json();
+            return data.response;
+
+        } catch (error) {
+            console.error('Failed to fetch from proxy:', error);
+            return "It seems I've lost connection to my recipe book. Please check your internet connection and try again.";
+        }
+    }
+
+    // --- DOM MANIPULATION & RENDERING ---
+
+    function renderMessage(content, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const avatarHtml = sender === 'bot' ? `<div class="message-avatar">🤖</div>` : '';
+        // The AI will generate the HTML, so we use .innerHTML
+        messageDiv.innerHTML = avatarHtml + `<div class="message-content">${content}</div>`;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function toggleTypingIndicator(show) {
+        typingIndicator.style.display = show ? 'flex' : 'none';
+        if (show) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+
+    function setupEventListeners() {
+        sendBtn.addEventListener('click', () => handleUserMessage(messageInput.value));
+        messageInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleUserMessage(messageInput.value);
+            }
+        });
+        suggestionsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('suggestion-btn')) {
+                const message = event.target.textContent;
+                messageInput.value = message;
+                handleUserMessage(message);
+            }
+        });
+    }
+    
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+        setupEventListeners();
+        messageInput.focus();
+    });
+
+})(); // End of encapsulated ChefBot application
+    </script>
+
+</body>
+</html>
