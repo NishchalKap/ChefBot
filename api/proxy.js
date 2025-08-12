@@ -20,7 +20,7 @@
         return response.status(500).json({ error: 'API key not configured on the server.' });
       }
 
-      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${GEMINI_API_KEY}`;
+      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
       try {
         // Call the actual Google AI service
         const aiResponse = await fetch(API_URL, {
